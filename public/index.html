@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Voluntariado</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>Sistema de Voluntariado</h1>
+      <nav id="main-nav">
+        <ul>
+          <li><a href="#" id="home-link">Início</a></li>
+          <li><a href="#" id="activities-link">Atividades</a></li>
+          <li><a href="#" id="my-activities-link" class="auth-required">Minhas Atividades</a></li>
+          <li><a href="#" id="admin-panel-link" class="admin-required">Painel Admin</a></li>
+        </ul>
+      </nav>
+      <div id="auth-buttons">
+        <button id="login-button" class="btn btn-outline">Entrar</button>
+        <button id="register-button" class="btn">Cadastrar</button>
+        <div id="user-info" class="hide">
+          <span id="user-name"></span>
+          <button id="logout-button" class="btn btn-outline">Sair</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Página Inicial -->
+    <section id="home-section" class="section">
+      <div class="hero">
+        <h2>Bem-vindo ao Sistema de Voluntariado</h2>
+        <p>Contribua com seu tempo e habilidades para fazer a diferença na comunidade!</p>
+        <button id="explore-activities" class="btn btn-large">Explorar Atividades</button>
+      </div>
+    </section>
+
+    <!-- Lista de Atividades -->
+    <section id="activities-section" class="section hide">
+      <h2>Atividades Disponíveis</h2>
+      <div id="activities-filter">
+        <input type="text" id="search-activity" placeholder="Buscar atividade...">
+        <select id="filter-activity">
+          <option value="all">Todas as atividades</option>
+          <option value="available">Com vagas disponíveis</option>
+          <option value="upcoming">Próximas atividades</option>
+        </select>
+      </div>
+      <div id="activities-list" class="activities-grid"></div>
+    </section>
+
+    <!-- Minhas Atividades -->
+    <section id="my-activities-section" class="section hide">
+      <h2>Minhas Atividades</h2>
+      <div id="my-activities-list" class="activities-grid"></div>
+    </section>
+
+    <!-- Painel Admin -->
+    <section id="admin-section" class="section hide">
+      <h2>Painel Administrativo</h2>
+      <div class="admin-controls">
+        <button id="add-activity-button" class="btn">Nova Atividade</button>
+      </div>
+      <div id="admin-activities-list" class="activities-grid"></div>
+    </section>
+  </main>
+
+  <!-- Modais -->
+  <!-- Modal de Login -->
+  <div id="login-modal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2>Entrar</h2>
+      <form id="login-form">
+        <div class="form-group">
+          <label for="login-email">Email</label>
+          <input type="email" id="login-email" required>
+        </div>
+        <div class="form-group">
+          <label for="login-password">Senha</label>
+          <input type="password" id="login-password" required>
+        </div>
+        <div class="form-group">
+          <button type="submit" class="btn btn-full">Entrar</button>
+        </div>
+        <p class="form-message" id="login-message"></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal de Cadastro -->
+  <div id="register-modal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2>Cadastrar</h2>
+      <form id="register-form">
+        <div class="form-group">
+          <label for="register-name">Nome</label>
+          <input type="text" id="register-name" required>
+        </div>
+        <div class="form-group">
+          <label for="register-email">Email</label>
+          <input type="email" id="register-email" required>
+        </div>
+        <div class="form-group">
+          <label for="register-password">Senha</label>
+          <input type="password" id="register-password" required>
+          <small>A senha deve ter pelo menos 8 caracteres, incluindo uma letra maiúscula, uma minúscula e um número</small>
+        </div>
+        <div class="form-group">
+          <button type="submit" class="btn btn-full">Cadastrar</button>
+        </div>
+        <p class="form-message" id="register-message"></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal de Atividade -->
+  <div id="activity-modal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2 id="activity-modal-title">Detalhes da Atividade</h2>
+      <div id="activity-details">
+        <p><strong>Título:</strong> <span id="activity-title"></span></p>
+        <p><strong>Descrição:</strong> <span id="activity-description"></span></p>
+        <p><strong>Data:</strong> <span id="activity-date"></span></p>
+        <p><strong>Local:</strong> <span id="activity-location"></span></p>
+        <p><strong>Vagas:</strong> <span id="activity-spots"></span></p>
+        <div id="activity-actions" class="auth-required">
+          <button id="register-activity" class="btn">Inscrever-se</button>
+          <button id="cancel-registration" class="btn btn-outline hide">Cancelar Inscrição</button>
+        </div>
+        <div id="admin-activity-actions" class="admin-required hide">
+          <button id="edit-activity" class="btn">Editar</button>
+          <button id="delete-activity" class="btn btn-outline">Excluir</button>
+          <button id="view-participants" class="btn">Ver Participantes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Gerenciamento de Atividade -->
+  <div id="manage-activity-modal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2 id="manage-activity-title">Nova Atividade</h2>
+      <form id="activity-form">
+        <div class="form-group">
+          <label for="activity-input-title">Título</label>
+          <input type="text" id="activity-input-title" required>
+        </div>
+        <div class="form-group">
+          <label for="activity-input-description">Descrição</label>
+          <textarea id="activity-input-description" required></textarea>
+        </div>
+        <div class="form-group">
+          <label for="activity-input-date">Data</label>
+          <input type="datetime-local" id="activity-input-date" required>
+        </div>
+        <div class="form-group">
+          <label for="activity-input-location">Local</label>
+          <input type="text" id="activity-input-location" required>
+        </div>
+        <div class="form-group">
+          <label for="activity-input-max-participants">Número Máximo de Participantes</label>
+          <input type="number" id="activity-input-max-participants" min="1" required>
+        </div>
+        <input type="hidden" id="activity-id">
+        <div class="form-group">
+          <button type="submit" class="btn btn-full">Salvar</button>
+        </div>
+        <p class="form-message" id="activity-form-message"></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal de Participantes -->
+  <div id="participants-modal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2>Participantes</h2>
+      <div id="participants-list"></div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="container">
+      <p>&copy; 2025 Sistema de Voluntariado</p>
+    </div>
+  </footer>
+
+</body>
+</html>
