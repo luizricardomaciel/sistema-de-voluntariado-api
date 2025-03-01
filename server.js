@@ -3,11 +3,13 @@ import path from "path";
 import publicRoutes from "./routes/public.js";
 import { openDB, closeDB } from "./db.js";
 import dotenv from "dotenv";
+import activityRoutes from "./routes/activity.js";
 
 dotenv.config(); // Carrega as variáveis do .env
-
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+app.use(express.json());
 
 // Abre o banco de dados ao iniciar o servidor
 openDB().then(() => {
@@ -17,6 +19,7 @@ openDB().then(() => {
 });
 
 app.use("/", publicRoutes);
+app.use("/", activityRoutes);
 
 // Serve arquivos estáticos (HTML, CSS, JS)
 app.use(express.static(path.join("./public")));

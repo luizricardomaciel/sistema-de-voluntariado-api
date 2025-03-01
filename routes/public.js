@@ -5,17 +5,18 @@ import { put, get } from "../db.js";
 const router = express.Router();
 
 router.post("/cadastro", async (req, res) => {
+  try {
     const { nome, email, senha } = req.body;
 
     if (!nome || !email || !senha) {
         return res.status(400).json({ error: "Todos os campos são obrigatórios." });
     }
 
-    try {
-        await put(`user:${email}`, JSON.stringify({ nome, email, senha }));
-        res.status(201).json({ message: "Cadastro realizado com sucesso!" });
+    await put(`user:${email}`, JSON.stringify({ nome, email, senha }));
+    res.status(201).json({ message: "Cadastro realizado com sucesso!" });
+
     } catch (err) {
-        res.status(500).json({ error: "Erro ao salvar usuário no banco de dados." });
+        res.status(500).json({ err});
     }
 });
 

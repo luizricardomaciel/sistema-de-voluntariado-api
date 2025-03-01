@@ -20,6 +20,7 @@ export const generateToken = (user) => {
   );
 };
 
+
 // Middleware de autenticação
 export const authenticate = (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1]; // Bearer <token>

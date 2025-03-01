@@ -70,3 +70,36 @@ manage_activity.querySelector(".close").addEventListener("click", () => {
     manage_activity.style.display = "none";
 });
 
+
+async function loadActivities() {
+  try {
+    const response = await fetch("/activities");
+    const activities = await response.json();
+    console.log(activities);
+    
+    renderActivities(activities);
+  } catch (error) {
+    console.error("Erro ao carregar atividades:", error);
+  }
+}
+
+function renderActivities(activities) {
+  const activitiesList = document.getElementById("activities-list");
+  activitiesList.innerHTML = "";
+
+  activities.forEach(activity => {
+    const activityCard = document.createElement("div");
+    activityCard.className = "activity-card";
+    activityCard.innerHTML = `
+      <h3>${activity.title}</h3>
+      <p>${activity.description}</p>
+      <p><strong>Data:</strong> ${new Date(activity.date).toLocaleDateString()}</p>
+      <p><strong>Local:</strong> ${activity.location}</p>
+      <p><strong>Vagas restantes:</strong> ${activity.maxParticipants - activity.participants.length}</p>
+    `;
+    activitiesList.appendChild(activityCard);
+  });
+}
+
+// Carregar atividades quando a página for carregada
+document.addEventListener("DOMContentLoaded", loadActivities);
