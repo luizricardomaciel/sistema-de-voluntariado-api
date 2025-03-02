@@ -13,6 +13,7 @@ export const generateToken = (user) => {
     { 
       id: user.id, 
       email: user.email,
+      nome: user.nome,
       isAdmin: user.isAdmin || false 
     }, 
     SECRET_KEY, 
@@ -31,7 +32,7 @@ export const authenticate = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, SECRET_KEY);
-    req.user = decoded;
+    req.user = decoded; // Aqui é onde req.user é criado
     next();
   } catch (error) {
     res.status(401).json({ error: "Token inválido ou expirado!" });
