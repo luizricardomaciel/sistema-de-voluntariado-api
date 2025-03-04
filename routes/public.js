@@ -4,21 +4,53 @@ import { put, get } from "../db.js";
 
 const router = express.Router();
 
+// Funções de validação
+function isValidEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+}
+
+function isValidPassword(senha) {
+    // Mínimo 8 caracteres, pelo menos uma letra maiúscula, uma minúscula e um número
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+    return passwordRegex.test(senha);
+}
+
+// Atualizar a rota de cadastro
 router.post("/cadastro", async (req, res) => {
-  try {
-    const { nome, email, senha } = req.body;
+    try {
+        const { nome, email, senha } = req.body;
 
-    if (!nome || !email || !senha) {
-        return res.status(400).json({ error: "Todos os campos são obrigatórios." });
-    }
+        if (!nome || !email || !senha) {
+            return res.status(400).json({ error: "Todos os campos são obrigatórios." });
+        }
 
-    await put(`user:${email}`, JSON.stringify({ nome, email, senha }));
-    res.status(201).json({ message: "Cadastro realizado com sucesso!" });
+        if (!isValidEmail(email)) {
+            return res.status(400).json({ error: "Email inválido." });
+        }
+
+        if (!isValidPassword(senha)) {
+            return res.status(400).json({
+                error: "Senha deve ter no mínimo 8 caracteres, uma letra maiúscula, uma minúscula e um número."
+            });
+        }
+
+        const userId = Date.now().toString();
+        const userData = {
+            id: userId,
+            nome,
+            email,
+            senha
+        };
+
+        await put(`user:${email}`, JSON.stringify(userData));
+        res.status(201).json({ message: "Cadastro realizado com sucesso!" });
 
     } catch (err) {
-        res.status(500).json({ err});
+        res.status(500).json({ err });
     }
 });
+
 
 router.post("/login", async (req, res) => {
     const { email, senha } = req.body;

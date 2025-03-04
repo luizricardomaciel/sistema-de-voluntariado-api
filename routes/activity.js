@@ -41,6 +41,8 @@ router.get('/activities', async (req, res) => {
       });
     }
 });
+
+// Criar uma nova atividade (POST /api/activities)
 router.post('/activities', authenticate, isAdmin, async (req, res) => {
     const { title, description, date, location, maxParticipants } = req.body;
     console.log('Dados recebidos:', { title, description, date, location, maxParticipants });
@@ -124,36 +126,42 @@ router.post('/activities/:activityId/register', authenticate, async (req, res) =
 
 // Remover usuário de uma atividade (DELETE /api/activities/:activityId/register)
 router.delete('/activities/:activityId/register', authenticate, async (req, res) => {
-  try {
-    const { activityId } = req.params;
-    const userEmail = req.user.email;
+    try {
+      const { activityId } = req.params;
+      const userEmail = req.user.email;
 
-    const activityData = await get(`activity:${activityId}`);
-    if (!activityData) {
-      return res.status(404).json({ error: 'Atividade não encontrada' });
-    }
+      const activityData = await get(`activity:${activityId}`);
+      if (!activityData) {
+        return res.status(404).json({ error: 'Atividade não encontrada' });
+      }
 
-    const activity = JSON.parse(activityData);
+      const activity = JSON.parse(activityData);
 
-    // Verifica se o usuário está inscrito
-    const participantIndex = activity.participants.findIndex(p => p.email === userEmail);
-    if (participantIndex === -1) {
-      return res.status(400).json({ error: 'Usuário não está inscrito nesta atividade' });
-    }
+      // Verifica se a atividade já começou
+      const activityDate = new Date(activity.date);
+      const now = new Date();
+      if (activityDate < now) {
+        return res.status(400).json({ error: 'Não é possível cancelar inscrição de atividades já iniciadas' });
+      }
 
-    // Remove o usuário da lista de participantes
-    activity.participants.splice(participantIndex, 1);
+      // Verifica se o usuário está inscrito
+      const participantIndex = activity.participants.findIndex(p => p.email === userEmail);
+      if (participantIndex === -1) {
+        return res.status(400).json({ error: 'Usuário não está inscrito nesta atividade' });
+      }
+
+      // Remove o usuário da lista de participantes
+      activity.participants.splice(participantIndex, 1);
     
-    // Atualiza a atividade no banco
-    await put(`activity:${activityId}`, JSON.stringify(activity));
+      await put(`activity:${activityId}`, JSON.stringify(activity));
 
-    res.json({ message: 'Inscrição cancelada com sucesso' });
-  } catch (error) {
-    console.error('Erro ao cancelar inscrição:', error);
-    res.status(500).json({ error: 'Erro ao processar cancelamento' });
-  }
+      res.json({ message: 'Inscrição cancelada com sucesso' });
+
+    } catch (error) {
+      console.error('Erro ao cancelar inscrição:', error);
+      res.status(500).json({ error: 'Erro ao processar cancelamento' });
+    }
 });
-
 // Rota para editar atividade
 router.put('/activities/:activityId', authenticate, isAdmin, async (req, res) => {
   try {
@@ -209,6 +217,31 @@ router.delete('/activities/:activityId', authenticate, isAdmin, async (req, res)
   }
 });
 
+// Rota para buscar atividades do usuário
+router.get('/my-activities', authenticate, async (req, res) => {
+  try {
+    const userEmail = req.user.email;
+    const activityKeys = await getActivityKeys();
+    const myActivities = [];
 
+    for (const key of activityKeys) {
+      const activityData = await get(key);
+      if (activityData) {
+        const activity = JSON.parse(activityData.toString());
+        if (activity.participants.some(p => p.email === userEmail)) {
+          myActivities.push(activity);
+        }
+      }
+    }
+
+    res.json(myActivities);
+  } catch (error) {
+    console.error('Erro ao buscar atividades do usuário:', error);
+    res.status(500).json({ 
+      error: 'Erro ao buscar suas atividades',
+      details: error.message 
+    });
+  }
+});
 
 export default router;
