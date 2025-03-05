@@ -67,25 +67,22 @@ router.post("/login", async (req, res) => {
         }
 
         const user = JSON.parse(userData);
-        const senhaValida = await comparePassword(senha, user.senha);
+        const senhaCorreta = await comparePassword(senha, user.senha);
 
-        if (!senhaValida) {
-            return res.status(401).json({ error: "Senha incorreta" });
+        if (!senhaCorreta) {
+            return res.status(401).json({ error: "Email ou senha incorretos" });
         }
 
         const token = generateToken(user);
-        res.json({ 
-            token, 
-            user: { 
-                id: user.id, 
-                nome: user.nome, 
-                email: user.email,
-                isAdmin: user.isAdmin 
-            }
-        });
+        res.json({ token, user: { 
+            id: user.id, 
+            nome: user.nome, 
+            email: user.email,
+            isAdmin: user.isAdmin 
+        }});
     } catch (error) {
-        console.error('Login error:', error);
-        res.status(500).json({ error: "Erro ao realizar login" });
+        console.error('Erro no login:', error);
+        res.status(500).json({ error: "Email ou senha incorretos" });
     }
 });
 
