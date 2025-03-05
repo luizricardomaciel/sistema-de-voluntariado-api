@@ -282,6 +282,16 @@
   .error-message {
     color: var(--error-color);
   }
+
+  .error-message {
+    color: red;
+    font-size: 0.9em;
+    margin-top: 5px;
+  }
+
+  .input-invalid {
+    border-color: red;
+  }
   
   .success-message {
     color: var(--success-color);

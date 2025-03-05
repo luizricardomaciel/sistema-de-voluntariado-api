@@ -103,3 +103,131 @@ function renderActivities(activities) {
 
 // Carregar atividades quando a página for carregada
 document.addEventListener("DOMContentLoaded", loadActivities);
+
+// Função para fazer login
+async function login(email, senha) {
+    try {
+        const response = await fetch('/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, senha })
+        });
+        const data = await response.json();
+        if (response.ok) {
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('user', JSON.stringify(data.user));
+            // Atualizar a interface com base no tipo de usuário
+            updateUI();
+        } else {
+            console.error('Erro ao fazer login:', data.error);
+        }
+    } catch (error) {
+        console.error('Erro ao fazer login:', error);
+    }
+}
+
+// Função para fazer cadastro
+async function register(nome, email, senha) {
+    try {
+        const response = await fetch('/cadastro', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nome, email, senha })
+        });
+        const data = await response.json();
+        if (response.ok) {
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('user', JSON.stringify(data.user));
+            // Atualizar a interface com base no tipo de usuário
+            updateUI();
+        } else {
+            console.error('Erro ao fazer cadastro:', data.error);
+        }
+    } catch (error) {
+        console.error('Erro ao fazer cadastro:', error);
+    }
+}
+
+// Função para atualizar a interface com base no tipo de usuário
+function updateUI() {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (user) {
+        document.getElementById('user-name').textContent = user.nome;
+        document.getElementById('user-info').classList.remove('hide');
+        document.getElementById('auth-buttons').classList.add('hide');
+        if (user.isAdmin) {
+            document.querySelectorAll('.admin-required').forEach(el => el.classList.remove('hide'));
+        }
+    } else {
+        document.getElementById('user-info').classList.add('hide');
+        document.getElementById('auth-buttons').classList.remove('hide');
+        document.querySelectorAll('.admin-required').forEach(el => el.classList.add('hide'));
+    }
+}
+
+// Chamar updateUI ao carregar a página
+document.addEventListener('DOMContentLoaded', updateUI);
+
+// Event listener para o formulário de login
+document.getElementById('login-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('login-email').value;
+    const senha = document.getElementById('login-password').value;
+    
+    await login(email, senha);
+    document.getElementById('login-modal').style.display = 'none';
+});
+
+// Função para validar nome
+function isValidName(nome) {
+    return nome.length > 0;
+}
+
+// Função para validar email
+function isValidEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+}
+
+// Função para validar senha
+function isValidPassword(senha) {
+    // Mínimo 8 caracteres, pelo menos uma letra maiúscula, uma minúscula e um número
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+    return passwordRegex.test(senha);
+}
+
+// Event listener para o formulário de cadastro
+document.getElementById('register-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+    const nome = document.getElementById('register-name').value;
+    const email = document.getElementById('register-email').value;
+    const senha = document.getElementById('register-password').value;
+    const registerMessage = document.getElementById('register-message');
+    const passwordInput = document.getElementById('register-password');
+
+    // Limpar mensagens de erro anteriores
+    registerMessage.textContent = '';
+    passwordInput.classList.remove('input-invalid');
+
+    // Validação dos dados
+    if (!isValidName(nome)) {
+        console.error('Nome inválido');
+        registerMessage.textContent = 'Nome inválido';
+        return;
+    }
+
+    if (!isValidEmail(email)) {
+        console.error('Email inválido');
+        registerMessage.textContent = 'Email inválido';
+        return;
+    }
+
+  if (!isValidPassword(senha)) {
+      registerMessage.textContent = 'Senha inválida';
+      passwordInput.classList.add('input-invalid');
+      return;
+  }
+
+  await register(nome, email, senha);
+  document.getElementById('register-modal').style.display = 'none';
+});

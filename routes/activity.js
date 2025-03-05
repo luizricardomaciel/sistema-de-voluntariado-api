@@ -244,4 +244,20 @@ router.get('/my-activities', authenticate, async (req, res) => {
   }
 });
 
+// Rota para visualizar a lista de participantes de uma atividade
+router.get('/activities/:activityId/participants', authenticate, isAdmin, async (req, res) => {
+    try {
+        const { activityId } = req.params;
+        const activityData = await get(`activity:${activityId}`);
+        if (!activityData) {
+            return res.status(404).json({ error: 'Atividade não encontrada' });
+        }
+        const activity = JSON.parse(activityData);
+        res.json(activity.participants || []);
+    } catch (error) {
+        console.error('Erro ao buscar participantes:', error);
+        res.status(500).json({ error: 'Erro ao buscar participantes' });
+    }
+});
+
 export default router;

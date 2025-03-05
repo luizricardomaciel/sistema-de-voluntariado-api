@@ -21,6 +21,8 @@ function isValidPassword(senha) {
 router.post("/cadastro", async (req, res) => {
     try {
         const { nome, email, senha } = req.body;
+        console.log(email,nome,senha);
+        
 
         if (!nome || !email || !senha) {
             return res.status(400).json({ error: "Todos os campos são obrigatórios." });
