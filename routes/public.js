@@ -1,6 +1,7 @@
 import express from "express";
 import { generateToken, authenticate } from "../auth.js";
 import { put, get } from "../db.js";
+import { hashPassword, comparePassword } from '../utils/passwordUtils.js';
 
 const router = express.Router();
 
@@ -16,7 +17,7 @@ function isValidPassword(senha) {
     return passwordRegex.test(senha);
 }
 
-// Atualizar a rota de cadastro
+// Modificar a rota de cadastro
 router.post("/cadastro", async (req, res) => {
     try {
         const { nome, email, senha } = req.body;
@@ -35,45 +36,54 @@ router.post("/cadastro", async (req, res) => {
             });
         }
 
+        const hashedPassword = await hashPassword(senha);
         const userId = Date.now().toString();
         const userData = {
             id: userId,
             nome,
             email,
-            senha
+            senha: hashedPassword
         };
 
         await put(`user:${email}`, JSON.stringify(userData));
         res.status(201).json({ message: "Cadastro realizado com sucesso!" });
-
-    } catch (err) {
-        res.status(500).json({ err });
+    } catch (error) {
+        res.status(500).json({ error: "Erro ao realizar cadastro" });
     }
 });
 
-
 router.post("/login", async (req, res) => {
-    const { email, senha } = req.body;
-
-    if (!email || !senha) {
-        return res.status(400).json({ error: "Email e senha são obrigatórios." });
-    }
-
     try {
+        const { email, senha } = req.body;
+        console.log('Login attempt for:', email);
+        
         const userData = await get(`user:${email}`);
+        console.log('User data found:', userData);
+
         if (!userData) {
-            return res.status(404).json({ error: "Usuário não encontrado." });
+            return res.status(401).json({ error: "Usuário não encontrado" });
         }
 
         const user = JSON.parse(userData);
-        if (user.senha !== senha) {
-            return res.status(401).json({ error: "Senha incorreta." });
+        const senhaValida = await comparePassword(senha, user.senha);
+
+        if (!senhaValida) {
+            return res.status(401).json({ error: "Senha incorreta" });
         }
 
         const token = generateToken(user);
-        res.json({ token });
-    } catch (err) {
-        res.status(500).json({ error: "Erro ao buscar usuário no banco de dados." });
+        res.json({ 
+            token, 
+            user: { 
+                id: user.id, 
+                nome: user.nome, 
+                email: user.email,
+                isAdmin: user.isAdmin 
+            }
+        });
+    } catch (error) {
+        console.error('Login error:', error);
+        res.status(500).json({ error: "Erro ao realizar login" });
     }
 });
 
