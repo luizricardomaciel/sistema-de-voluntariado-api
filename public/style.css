@@ -31,8 +31,9 @@
     line-height: 1.6;
     color: var(--text-color);
     background-color: var(--light-bg);
-    height: 100vh;
     position: relative;
+    min-height: 100vh;
+    padding-bottom: 65.60px;
   }
   
   a {
@@ -400,6 +401,10 @@
     
     #main-nav {
       margin: 15px 0;
+    }
+
+    #main-nav li {
+      margin-left: 13px;
     }
     
     #auth-buttons {
