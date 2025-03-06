@@ -84,11 +84,17 @@ async function loadActivities() {
   }
 }
 
+function isUserRegistered(activity) {
+  const user = JSON.parse(localStorage.getItem('user'));
+  return activity.participants.some(p => p.email === user.email);
+}
+
 function renderActivities(activities) {
   const activitiesList = document.getElementById("activities-list");
   activitiesList.innerHTML = "";
 
   activities.forEach(activity => {
+    const isRegistered = isUserRegistered(activity);
     const activityCard = document.createElement("div");
     activityCard.className = "activity-card";
     activityCard.innerHTML = `
@@ -97,11 +103,76 @@ function renderActivities(activities) {
       <p><strong>Data:</strong> ${new Date(activity.date).toLocaleDateString()}</p>
       <p><strong>Local:</strong> ${activity.location}</p>
       <p><strong>Vagas restantes:</strong> ${activity.maxParticipants - activity.participants.length}</p>
+      ${isRegistered ? 
+        `<button class="btn cancel-btn" data-activity-id="${activity.id}">Cancelar Inscrição</button>` :
+        `<button class="btn register-btn" data-activity-id="${activity.id}">Inscrever-se</button>`
+      }
     `;
     activitiesList.appendChild(activityCard);
   });
+
+  addButtonEventListeners();
 }
 
+function addButtonEventListeners() {
+  document.querySelectorAll('.register-btn').forEach(button => {
+    button.addEventListener('click', handleRegistration);
+  });
+
+  document.querySelectorAll('.cancel-btn').forEach(button => {
+    button.addEventListener('click', handleCancellation);
+  });
+}
+
+async function handleRegistration(e) {
+  const activityId = e.target.dataset.activityId;
+  try {
+    const response = await fetch(`/activities/${activityId}/register`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      alert('Inscrição realizada com sucesso!');
+      loadActivities();
+    } else {
+      alert(data.error || 'Erro ao realizar inscrição');
+    }
+  } catch (error) {
+    alert('Erro ao realizar inscrição');
+    console.error(error);
+  }
+}
+
+async function handleCancellation(e) {
+  const activityId = e.target.dataset.activityId;
+  try {
+    const response = await fetch(`/activities/${activityId}/register`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      alert('Inscrição cancelada com sucesso!');
+      loadActivities();
+    } else {
+      alert(data.error || 'Erro ao cancelar inscrição');
+    }
+  } catch (error) {
+    alert('Erro ao cancelar inscrição');
+    console.error(error);
+  }
+}
 // Carregar atividades quando a página for carregada
 document.addEventListener("DOMContentLoaded", loadActivities);
 
@@ -311,3 +382,89 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
   await register(nome, email, senha);
   document.getElementById('register-modal').style.display = 'none';
 });
+
+// Event listener para o formulário de criação/atualização de atividade
+document.getElementById('activity-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  // Captura os valores dos campos do modal
+  const title = document.getElementById('activity-input-title').value;
+  const description = document.getElementById('activity-input-description').value;
+  const date = document.getElementById('activity-input-date').value;
+  const location = document.getElementById('activity-input-location').value;
+  const maxParticipants = document.getElementById('activity-input-max-participants').value;
+
+  const payload = {
+    title,
+    description,
+    date,
+    location,
+    maxParticipants: Number(maxParticipants)
+  };
+  console.log(payload);
+  
+
+  try {
+    // Faz a requisição para criar nova atividade (endpoint protegido, portanto é necessário token JWT no header)
+    const response = await fetch('/activities', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      },
+      body: JSON.stringify(payload)
+    });
+
+    // Confere se a resposta foi bem‐sucedida
+    if (!response.ok) {
+      const errorData = await response.json();
+      document.getElementById('activity-form-message').textContent = errorData.error || 'Erro ao criar atividade';
+      return;
+    }
+
+    // Se a criação foi bem-sucedida, exibe mensagem e recarrega as atividades
+    document.getElementById('activity-form-message').textContent = 'Atividade criada com sucesso!';
+    // Opcional: atualizar a lista de atividades na página
+    loadActivities();
+    // Fecha o modal
+    document.getElementById('manage-activity-modal').style.display = 'none';
+  } catch (error) {
+    document.getElementById('activity-form-message').textContent = error.message;
+  }
+});
+
+// Função para carregar as atividades
+document.getElementById('filter-activity').addEventListener('change', filterActivities);
+document.getElementById('search-activity').addEventListener('input', filterActivities);
+
+function filterActivities() {
+  const filterValue = document.getElementById('filter-activity').value;
+  const searchValue = document.getElementById('search-activity').value.toLowerCase();
+  const allActivities = document.querySelectorAll('.activity-card');
+
+  allActivities.forEach(card => {
+    let show = true;
+    
+    // Filter by search text
+    const title = card.querySelector('h3').textContent.toLowerCase();
+    const description = card.querySelector('p').textContent.toLowerCase();
+    if (!title.includes(searchValue) && !description.includes(searchValue)) {
+      show = false;
+    }
+
+    // Filter by availability
+    if (filterValue === 'available') {
+      const spots = parseInt(card.querySelector('p:nth-child(5)').textContent.match(/\d+/)[0]);
+      if (spots <= 0) show = false;
+    }
+
+    // Filter by upcoming activities
+    if (filterValue === 'upcoming') {
+      const dateText = card.querySelector('p:nth-child(3)').textContent;
+      const activityDate = new Date(dateText.split(':')[1]);
+      if (activityDate < new Date()) show = false;
+    }
+
+    card.style.display = show ? 'block' : 'none';
+  });
+}
