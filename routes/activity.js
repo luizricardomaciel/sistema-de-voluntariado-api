@@ -75,7 +75,7 @@ router.post('/activities', authenticate, isAdmin, async (req, res) => {
         details: error.message 
       });
     }
-  });
+});
   
 // Registrar usuário em uma atividade (POST /api/activities/:activityId/register)
 router.post('/activities/:activityId/register', authenticate, async (req, res) => {

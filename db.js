@@ -59,9 +59,9 @@ export const addActivityKey = async (key) => {
       console.error('Erro ao adicionar chave de atividade:', error);
       throw error; // Propaga o erro para ser tratado no chamador
     }
-  };
+};
   
 export const getActivityKeys = async () => {
     const activityKeys = await get('activityKeys');
     return activityKeys ? JSON.parse(activityKeys) : [];
-  };
+};

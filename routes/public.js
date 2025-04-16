@@ -21,8 +21,6 @@ function isValidPassword(senha) {
 router.post("/cadastro", async (req, res) => {
     try {
         const { nome, email, senha } = req.body;
-        console.log(email,nome,senha);
-        
 
         if (!nome || !email || !senha) {
             return res.status(400).json({ error: "Todos os campos são obrigatórios." });
@@ -36,6 +34,12 @@ router.post("/cadastro", async (req, res) => {
             return res.status(400).json({
                 error: "Senha deve ter no mínimo 8 caracteres, uma letra maiúscula, uma minúscula e um número."
             });
+        }
+
+        // Verifica se o email já está cadastrado
+        const existingUser = await get(`user:${email}`).catch(() => null);
+        if (existingUser) {
+            return res.status(400).json({ error: "Email já cadastrado." });
         }
 
         const hashedPassword = await hashPassword(senha);

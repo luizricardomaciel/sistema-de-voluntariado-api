@@ -14,7 +14,12 @@ document.getElementById('login-button').addEventListener('click', () => loginMod
 loginModal.querySelector('.close').addEventListener('click', () => loginModal.style.display = 'none');
 
 document.getElementById('register-button').addEventListener('click', () => registerModal.style.display = 'flex');
-registerModal.querySelector('.close').addEventListener('click', () => registerModal.style.display = 'none');
+registerModal.querySelector('.close').addEventListener('click', () => {
+  registerModal.style.display = 'none';
+  const registerMessage = document.getElementById('register-message');
+  registerMessage.textContent = '';
+  registerMessage.style.display = 'none';
+});
 
 document.getElementById('add-activity-button').addEventListener('click', () => manageActivityModal.style.display = 'flex');
 manageActivityModal.querySelector('.close').addEventListener('click', () => manageActivityModal.style.display = 'none');
@@ -79,14 +84,43 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
   const nome = document.getElementById('register-name').value;
   const email = document.getElementById('register-email').value;
   const senha = document.getElementById('register-password').value;
+
+  const registerMessage = document.getElementById('register-message');
+
+  // Limpa mensagens anteriores
+  registerMessage.textContent = '';
+  registerMessage.style.display = 'none';
+
+  // Validação da senha
+  if (senha.length < 8) {
+    registerMessage.textContent = 'A senha deve ter pelo menos 8 caracteres.';
+    registerMessage.style.display = 'block';
+    return;
+  }
+
+  if (!/[A-Z]/.test(senha)) {
+    registerMessage.textContent = 'A senha deve conter pelo menos uma letra maiúscula.';
+    registerMessage.style.display = 'block';
+    return;
+  }
+
+  if (!/[0-9]/.test(senha)) {
+    registerMessage.textContent = 'A senha deve conter pelo menos um número.';
+    registerMessage.style.display = 'block';
+    return;
+  }
+
   const result = await register(nome, email, senha);
 
   if (result.success) {
+    registerMessage.textContent = '';
+    registerMessage.style.display = 'none';
     registerModal.style.display = 'none';
     updateAuthUI();
     loadActivities().then(renderActivities);
   } else {
-    document.getElementById('register-message').textContent = result.error;
+    registerMessage.textContent = result.error; // Exibe o erro retornado pelo backend
+    registerMessage.style.display = 'block';
   }
 });
 
