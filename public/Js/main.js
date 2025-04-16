@@ -10,8 +10,19 @@ const registerModal = document.getElementById('register-modal');
 const manageActivityModal = document.getElementById('manage-activity-modal');
 
 // Event Listeners para Modais
-document.getElementById('login-button').addEventListener('click', () => loginModal.style.display = 'flex');
-loginModal.querySelector('.close').addEventListener('click', () => loginModal.style.display = 'none');
+document.getElementById('login-button').addEventListener('click', () => {
+  loginModal.style.display = 'flex';
+  const loginMessage = document.getElementById('login-message');
+  loginMessage.textContent = ''; // Limpa a mensagem
+  loginMessage.style.display = 'none'; // Oculta a mensagem
+});
+
+loginModal.querySelector('.close').addEventListener('click', () => {
+  loginModal.style.display = 'none';
+  const loginMessage = document.getElementById('login-message');
+  loginMessage.textContent = ''; // Limpa a mensagem
+  loginMessage.style.display = 'none'; // Oculta a mensagem
+});
 
 document.getElementById('register-button').addEventListener('click', () => registerModal.style.display = 'flex');
 registerModal.querySelector('.close').addEventListener('click', () => {
@@ -67,14 +78,20 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const email = document.getElementById('login-email').value;
   const senha = document.getElementById('login-password').value;
+
   const result = await login(email, senha);
+
+  const loginMessage = document.getElementById('login-message');
+  loginMessage.textContent = ''; // Limpa mensagens anteriores
+  loginMessage.style.display = 'none';
 
   if (result.success) {
     loginModal.style.display = 'none';
     updateAuthUI();
     loadActivities().then(renderActivities);
   } else {
-    document.getElementById('login-message').textContent = result.data?.error || result.error;
+    loginMessage.textContent = result.data?.error || 'Email ou senha incorretos'; // Exibe mensagem de erro
+    loginMessage.style.display = 'block'; // Mostra a mensagem
   }
 });
 

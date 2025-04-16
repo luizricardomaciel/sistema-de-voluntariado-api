@@ -1,14 +1,24 @@
 import { openDB, closeDB, put } from './db.js';
-import { hashPassword } from './utils/passwordUtils.js'; // Certifique-se de que a função hashPassword está exportada de auth.js
+import { hashPassword } from './utils/passwordUtils.js';
+import dotenv from 'dotenv';
+
+dotenv.config(); // Carrega as variáveis do .env
 
 async function createAdmin() {
   try {
     await openDB();
 
+    const adminEmail = process.env.ADMIN_EMAIL;
+    const adminPassword = process.env.ADMIN_PASSWORD;
+
+    if (!adminEmail || !adminPassword) {
+      throw new Error("ADMIN_EMAIL ou ADMIN_PASSWORD não definidos no arquivo .env");
+    }
+
     const adminUser = {
       nome: "Admin",
-      email: "admin@example.com",
-      senha: await hashPassword("SenhaSuperSegura123@"), // Criptografar a senha
+      email: adminEmail,
+      senha: await hashPassword(adminPassword), // Criptografar a senha
       isAdmin: true
     };
 
