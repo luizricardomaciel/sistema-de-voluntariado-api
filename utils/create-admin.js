@@ -1,5 +1,5 @@
-import { openDB, closeDB, put } from './db.js';
-import { hashPassword } from './utils/passwordUtils.js';
+import { openDB, closeDB, put } from '../db.js';
+import { hashPassword } from './passwordUtils.js';
 import dotenv from 'dotenv';
 
 dotenv.config(); // Carrega as variáveis do .env
