@@ -2,7 +2,7 @@
 import { login, register, logout, getUser, isLoggedIn } from './auth.js';
 import { loadActivities, registerForActivity, cancelRegistration, createActivity, loadUserActivities } from './activities.js';
 import { showSection, updateAuthUI, renderActivities, filterActivities, renderUserActivities } from './ui.js';
-
+import {notify}  from "./temporaryModal.js"
 
 // Modais
 const loginModal = document.getElementById('login-modal');
@@ -161,13 +161,32 @@ document.getElementById('activity-form').addEventListener('submit', async (e) =>
 // Activity List Event Delegation
 document.getElementById('activities-list').addEventListener('click', async (e) => {
     if (e.target.classList.contains('register-btn')) {
+      
       const activityId = e.target.dataset.activityId;
+
+      // Obter a atividade correspondente
+      const activities = await loadActivities();
+      const activity = activities.find(a => a.id === activityId);
+
+      if (activity) {
+        const activityDate = new Date(activity.date);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Remove a hora para comparar apenas a data
+
+        // Verificar se a data da atividade já passou
+        if (activityDate < today) {
+          notify('A data do evento já passou. Não é possível se inscrever.', 'error');
+          return;
+        }
+      }
+
       const result = await registerForActivity(activityId, localStorage.getItem('token'));
       if (result.error) {
-        alert(result.error);
+        notify(result.error, 'error');
       } else {
-        alert('Inscrição realizada com sucesso!');
+        notify('Inscrição realizada com sucesso!', 'success');
         loadActivities().then(renderActivities);
+
         // Atualizar minhas atividades também
         if (document.getElementById('my-activities-section').classList.contains('hide') === false) {
           loadUserActivities(localStorage.getItem('token')).then(renderUserActivities);
@@ -177,10 +196,11 @@ document.getElementById('activities-list').addEventListener('click', async (e) =
       const activityId = e.target.dataset.activityId;
       const result = await cancelRegistration(activityId, localStorage.getItem('token'));
       if (result.error) {
-        alert(result.error);
+        notify(result.error, 'error');
       } else {
-        alert('Inscrição cancelada com sucesso!');
+        notify('Inscrição cancelada com sucesso!', 'success');
         loadActivities().then(renderActivities);
+
         // Atualizar minhas atividades também
         if (document.getElementById('my-activities-section').classList.contains('hide') === false) {
           loadUserActivities(localStorage.getItem('token')).then(renderUserActivities);
@@ -194,9 +214,9 @@ document.getElementById('my-activities-list').addEventListener('click', async (e
       const activityId = e.target.dataset.activityId;
       const result = await cancelRegistration(activityId, localStorage.getItem('token'));
       if (result.error) {
-        alert(result.error);
+        notify(result.error, 'error'); // Substituindo showTemporaryModal por notify
       } else {
-        alert('Inscrição cancelada com sucesso!');
+        notify('Inscrição cancelada com sucesso!', 'success'); // Substituindo showTemporaryModal por notify
         loadActivities().then(renderActivities);
         const token = localStorage.getItem('token');
         const updatedActivities = await loadUserActivities(token);
@@ -206,7 +226,7 @@ document.getElementById('my-activities-list').addEventListener('click', async (e
       }
     }
 });
-  
+
 // Filter Activities
 document.getElementById('filter-activity').addEventListener('change', filterActivities);
 document.getElementById('search-activity').addEventListener('input', filterActivities);

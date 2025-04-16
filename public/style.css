@@ -381,6 +381,148 @@
   .admin-controls {
     margin-bottom: 20px;
   }
+
+  .controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    justify-content: center;
+}
+
+button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+button:hover {
+    opacity: 0.9;
+}
+
+.btn-success {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.btn-error {
+    background-color: #f44336;
+    color: white;
+}
+
+.btn-warning {
+    background-color: #ff9800;
+    color: white;
+}
+
+.btn-info {
+    background-color: #2196F3;
+    color: white;
+}
+
+.notification-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 320px;
+    z-index: 1000;
+}
+
+.notification {
+    background-color: white;
+    padding: 16px;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: flex-start;
+    position: relative;
+    animation: slideIn 0.3s forwards;
+    overflow: hidden;
+}
+
+.notification.fade-out {
+    animation: fadeOut 0.5s forwards;
+}
+
+.notification-border {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 5px;
+}
+
+.notification-content {
+    margin-left: 10px;
+    flex-grow: 1;
+}
+
+.notification-success .notification-border {
+    background-color: #4CAF50;
+}
+
+.notification-error .notification-border {
+    background-color: #f44336;
+}
+
+.notification-warning .notification-border {
+    background-color: #ff9800;
+}
+
+.notification-info .notification-border {
+    background-color: #2196F3;
+}
+
+.notification-title {
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.notification-message {
+    color: #666;
+    font-size: 14px;
+}
+
+.notification-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    color: #999;
+    padding: 0 5px;
+    margin-left: 10px;
+}
+
+.notification-close:hover {
+    color: #333;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
   
   /* Footer */
   footer {

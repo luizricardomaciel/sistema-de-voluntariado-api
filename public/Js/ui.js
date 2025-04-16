@@ -96,24 +96,31 @@ export function filterActivities() {
   const searchValue = document.getElementById('search-activity').value.toLowerCase();
   const allActivities = document.querySelectorAll('.activity-card');
 
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Remove a hora para comparar apenas a data
+
   allActivities.forEach(card => {
     let show = true;
 
     const title = card.querySelector('h3').textContent.toLowerCase();
     const description = card.querySelector('p').textContent.toLowerCase();
+    const dateText = card.querySelector('p:nth-child(3)').textContent.match(/(\d{2}\/\d{2}\/\d{4})/); // Extrai a data no formato correto
+    const activityDate = dateText ? new Date(dateText[0].split('/').reverse().join('-')) : null; // Converte para o formato ISO (YYYY-MM-DD)
+    const spots = parseInt(card.querySelector('p:nth-child(5)').textContent.match(/\d+/)[0]);
+
+    // Filtro de busca por título ou descrição
     if (!title.includes(searchValue) && !description.includes(searchValue)) {
       show = false;
     }
 
-    if (filterValue === 'available') {
-      const spots = parseInt(card.querySelector('p:nth-child(5)').textContent.match(/\d+/)[0]);
-      if (spots <= 0) show = false;
+    // Filtro de atividades futuras (upcoming)
+    if (filterValue === 'upcoming' && (!activityDate || activityDate < today || spots <= 0)) {
+      show = false;
     }
 
-    if (filterValue === 'upcoming') {
-      const dateText = card.querySelector('p:nth-child(3)').textContent;
-      const activityDate = new Date(dateText.split(':')[1]);
-      if (activityDate < new Date()) show = false;
+    // Filtro de atividades com vagas disponíveis
+    if (filterValue === 'available' && (spots <= 0 || !activityDate || activityDate < today)) {
+      show = false;
     }
 
     card.style.display = show ? 'block' : 'none';
