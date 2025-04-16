@@ -46,19 +46,35 @@ export function renderActivities(activities) {
   const activitiesList = document.getElementById('activities-list');
   activitiesList.innerHTML = '';
 
-  activities.forEach(activity => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Remove a hora para comparar apenas a data
+
+  // Ordenar atividades: do dia atual para frente primeiro, depois as anteriores
+  const sortedActivities = activities.sort((a, b) => {
+    const dateA = new Date(a.date);
+    const dateB = new Date(b.date);
+
+    if (dateA >= today && dateB < today) return -1; // Atividades futuras ou do dia atual vêm primeiro
+    if (dateA < today && dateB >= today) return 1;  // Atividades passadas vêm depois
+    return dateA - dateB; // Ordenar por data
+  });
+
+  sortedActivities.forEach(activity => {
     const isRegistered = activity.participants.some(p => p.email === getUser()?.email);
+    const activityDate = new Date(activity.date);
+    const isExpired = activityDate < today; // Verifica se a atividade está expirada
+
     const activityCard = document.createElement('div');
     activityCard.className = 'activity-card';
     activityCard.innerHTML = `
-      <h3>${activity.title}</h3>
+      <h3>${activity.title} ${isExpired ? '(EXPIRADO)' : ''}</h3>
       <p>${activity.description}</p>
-      <p><strong>Data:</strong> ${new Date(activity.date).toLocaleDateString()}</p>
+      <p><strong>Data:</strong> ${activityDate.toLocaleDateString()}</p>
       <p><strong>Local:</strong> ${activity.location}</p>
       <p><strong>Vagas restantes:</strong> ${activity.maxParticipants - activity.participants.length}</p>
       ${isRegistered ? 
         `<button class="btn cancel-btn" data-activity-id="${activity.id}">Cancelar Inscrição</button>` :
-        `<button class="btn register-btn" data-activity-id="${activity.id}">Inscrever-se</button>`
+        `<button class="btn register-btn" data-activity-id="${activity.id}" ${isExpired ? 'disabled' : ''}>Inscrever-se</button>`
       }
     `;
     activitiesList.appendChild(activityCard);
